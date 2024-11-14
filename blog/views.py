@@ -3,7 +3,9 @@ from django.shortcuts import render
 from django.shortcuts import get_object_or_404
 # from django.views.generic import ListView
 from .models import Post
-from pprint import pprint
+from .forms import EmailPostForm
+from django.core.mail import send_mail
+from django.http import HttpRequest
 # Create your views here.
 
 
@@ -16,7 +18,53 @@ from pprint import pprint
 #     template_name = 'blog/post/list.html'
 
 
-def post_list(request):
+
+def post_share(request: HttpRequest, post_id):
+    # Retrieve post by id
+    sent = False
+    post = get_object_or_404(
+        Post,
+        id=post_id,
+        status=Post.Status.PUBLISHED
+    )
+
+    if request.method == 'POST':
+        form = EmailPostForm(request.POST)
+        if form.is_valid():
+            cd = form.cleaned_data
+            post_url = request.build_absolute_uri(
+                post.get_absolute_url()
+            )
+            subject = (
+                f"{cd['name']} ({cd['email']})"
+                f"recoments you red {post.title}"
+            )
+            message = (
+                f"Read {post.title} at {post_url}\n\n"
+                f"{cd['name']}\'s comments: {cd['comments']}"
+            )
+            send_mail(
+                subject=subject,
+                message=message,
+                from_email=None,
+                recipient_list=[cd['to']]
+            )
+            sent = True
+    else:
+        form = EmailPostForm()
+
+    return render(
+        request,
+        'blog/post/share.html',
+        {
+            'post': post,
+            'form': form,
+            'sent': sent
+        }
+    )
+
+
+def post_list(request: HttpRequest):
     posts_list = Post.published.all()
     paginator = Paginator(posts_list, 3)
     page_number = request.GET.get('page', 1)
@@ -36,7 +84,7 @@ def post_list(request):
     )
 
 
-def post_detail(request, post):
+def post_detail(request: HttpRequest, post: Post):
     post = get_object_or_404(
         Post,
         status=Post.Status.PUBLISHED,
