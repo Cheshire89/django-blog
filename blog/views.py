@@ -1,11 +1,22 @@
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from django.shortcuts import render
-from django.shortcuts import get_object_or_404
-# from django.views.generic import ListView
-from .models import Post
-from .forms import EmailPostForm
+from django.shortcuts import (
+    get_object_or_404,
+    render
+)
 from django.core.mail import send_mail
 from django.http import HttpRequest
+from django.views.decorators.http import require_POST
+
+# from django.views.generic import ListView
+from .models import (
+    Post,
+    Comment
+)
+from .forms import (
+    EmailPostForm,
+    CommentForm
+)
+
 # Create your views here.
 
 
@@ -17,6 +28,30 @@ from django.http import HttpRequest
 #     paginate_by = 3
 #     template_name = 'blog/post/list.html'
 
+@require_POST
+def post_comment(request: HttpRequest, post_id):
+    post = get_object_or_404(
+        Post,
+        id=post_id,
+        status=Post.Status.PUBLISHED
+    )
+    comment: Comment = None
+    form = CommentForm(data=request.POST)
+    if form.is_valid():
+        # Crreate a comment object without saving it
+        comment = form.save(commit=False)
+        comment.post = post
+        comment.save()
+
+    return render(
+        request,
+        'blog/post/comment.html',
+        {
+            'post': post,
+            'form': form,
+            'comment': comment
+        }
+    )
 
 
 def post_share(request: HttpRequest, post_id):
@@ -90,9 +125,18 @@ def post_detail(request: HttpRequest, post: Post):
         status=Post.Status.PUBLISHED,
         slug=post
     )
+
+    # list of active comments for this post
+    comments = post.comments.filter(active=True)
+    form = CommentForm()
+
     return render(
         request,
         'blog/post/detail.html',
-        {'post': post}
+        {
+            'post': post,
+            'comments': comments,
+            'form': form
+         }
     )
 
