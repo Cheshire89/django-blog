@@ -17,6 +17,7 @@
     <main>
       <div>
         {% block content %}
+
         {% endblock %}
       </div>
       <div class="bg-light">
@@ -24,6 +25,9 @@
         <p>This is my blog</p>
         <p>
           I've written&nbsp;{% total_posts %}&nbsp;so far.
+        </p>
+        <p>
+          <a href="{% url 'blog:post_feed' %}">Subscribe to my RSS feed</a>
         </p>
         <h3>Latest posts</h3>
         {% show_latest_posts %}
