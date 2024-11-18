@@ -33,6 +33,7 @@ SECRET_KEY = 'django-insecure-!dc#h05&t6n^(8p@mn)4(55a(#h+7@%&@dvtfp4%-b+*ng4sgk
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
+SITE_ID = 1
 
 ALLOWED_HOSTS = []
 
@@ -45,6 +46,8 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
+    'django.contrib.sites',
+    'django.contrib.sitemaps',
     'django.contrib.staticfiles',
     'taggit',
     'blog.apps.BlogConfig'
