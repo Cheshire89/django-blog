@@ -1,4 +1,5 @@
 {% extends 'blog/base.html' %}
+{% load blog_tags %}
 
 {% block title %}
   {{ post.title }}
@@ -7,11 +8,21 @@
 {% block content %}
   <h1>{{ post.title }}</h1>
   <p class="date">Published {{ post.publish }} by {{ post.author }}</p>
-  {{ post.body|linebreaks }}
+
+  {{ post.body|markdown }}
 
   <p>
     <a href="{% url 'blog:post_share' post.id %}">Share this post</a>
   </p>
+
+  <h2>Simmilar posts</h2>
+  {% for post in simmilar_posts %}
+    <p>
+      <a href="{{ post.get_absolute_url }}">{{ post.title }}</a>
+    </p>
+  {% empty %}
+    Thre are no simillar posts yet.
+  {% endfor %}
 
   {% with total_comments=comments.count %}
     <h2>{{ total_comments }} comment{{ total_comments|pluralize }}</h2>
@@ -24,7 +35,7 @@
       {{ comment.body|linebreaks }}
     </div>
   {% empty %}
-    <p>There is no comments</p>
+    <p>There is no comments.</p>
   {% endfor %}
 
   {% include 'blog/post/includes/comment_form.html' %}

@@ -6,6 +6,7 @@ from django.shortcuts import (
 from django.core.mail import send_mail
 from django.http import HttpRequest
 from django.views.decorators.http import require_POST
+from taggit.models import Tag
 
 # from django.views.generic import ListView
 from .models import (
@@ -16,6 +17,7 @@ from .forms import (
     EmailPostForm,
     CommentForm
 )
+from django.db.models import Count
 
 # Create your views here.
 
@@ -99,8 +101,13 @@ def post_share(request: HttpRequest, post_id):
     )
 
 
-def post_list(request: HttpRequest):
+def post_list(request: HttpRequest, tag_slug=None):
     posts_list = Post.published.all()
+    tag = None
+    if tag_slug:
+        tag = get_object_or_404(Tag, slug=tag_slug)
+        posts_list = posts_list.filter(tags__in=[tag])
+    # Pagination
     paginator = Paginator(posts_list, 3)
     page_number = request.GET.get('page', 1)
 
@@ -130,13 +137,22 @@ def post_detail(request: HttpRequest, post: Post):
     comments = post.comments.filter(active=True)
     form = CommentForm()
 
+    # List similar posts
+    post_tag_ids = post.tags.values_list('id', flat=True)
+    simmilar_posts = Post.published \
+        .filter(tags__in=post_tag_ids) \
+        .exclude(id=post.id) \
+        .annotate(same_tags=Count('tags')) \
+        .order_by('-same_tags', '-publish')[:4]
+
     return render(
         request,
         'blog/post/detail.html',
         {
             'post': post,
             'comments': comments,
-            'form': form
+            'form': form,
+            'simmilar_posts': simmilar_posts
          }
     )
 
