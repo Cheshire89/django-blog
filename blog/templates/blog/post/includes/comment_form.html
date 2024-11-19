@@ -1,10 +1,22 @@
 <h2>Add a new comment</h2>
 <form action="{% url 'blog:post_comment' post.id %}" method="post">
-  <div class="left">{{ form.name.as_field_group }}</div>
-  <div class="left">{{ form.email.as_field_group }}</div>
-  {{ form.body.as_field_group }}
+  <div class="form-row">
+    <div class="form-group col">
+      <label for="{{ form.name.id_for_label }}" class="form-label">{{ form.name.label_tag }}</label>
+      <input type="text" name="name" class="form-control" id="{{ form.name.id_for_label }}" />
+    </div>
+    <div class="form-group col">
+      <label for="{{ form.email.id_for_label }}" class="form-label">{{ form.email.label_tag }}</label>
+      <input type="email" name="email" class="form-control" id="{{ form.email.id_for_label }}" />
+    </div>
+  </div>
+  <div class="form-group">
+    <label for="{{ form.body.id_for_label }}" class="form-label">{{ form.body.label_tag }}</label>
+    <textarea class="form-control" name="body" id="{{ form.body.id_for_label }}"></textarea>
+  </div>
+  {% comment %} {{ form.name.as_field_group }}
+  {{ form.email.as_field_group }}
+  {{ form.body.as_field_group }} {% endcomment %}
   {% csrf_token %}
-  <p>
-    <input type="submit" value="Add comment" />
-  </p>
+  <button type="submit" class="btn btn-primary">Add Comment</button>
 </form>

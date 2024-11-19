@@ -1,0 +1,32 @@
+{% extends 'blog/base.html' %}
+{% load blog_tags %}
+
+{% block title %}
+  Search
+{% endblock %}
+
+{% block content %}
+  {% if query %}
+    <h1>Posts containing "{{ query }}"</h1>
+    <h3>
+      {% with total_results=results.count %}
+        Found {{ total_results }} result{{ total_results|pluralize }}
+      {% endwith %}
+    </h3>
+    {% for post in results %}
+      {% get_post post %}
+    {% empty %}
+      <p>There are no results for your query.</p>
+    {% endfor %}
+    <a class="btn btn-primary" href="{% url 'blog:post_search' %}">Search again</a>
+  {% else %}
+    <h1>Search for posts</h1>
+    <form method="get">
+      <div class="form-group mb-3">
+        <label for="{{ form.query.id_for_label }}" class="form-label">{{ form.query.label_tag }}</label>
+        <input type="text" class="form-control" id="{{ form.query.id_for_label }}" name="query" />
+      </div>
+      <button type="submit" class="btn btn-primary">Search</button>
+    </form>
+  {% endif %}
+{% endblock %}

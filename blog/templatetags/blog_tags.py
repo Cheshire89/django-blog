@@ -5,6 +5,12 @@ from ..models import Post
 import markdown
 from django.utils.safestring import mark_safe
 
+from ..forms import (
+    SearchForm
+)
+from django.db.models import Count
+from django.contrib.postgres.search import SearchVector
+
 
 register = template.Library()
 
@@ -22,6 +28,12 @@ def show_latest_posts(count=5):
     latest_posts = Post.published.order_by('-publish')[:count]
     return {
         'latest_posts': latest_posts
+    }
+
+@register.inclusion_tag('blog/post/post.html')
+def get_post(post: Post):
+    return {
+        'post': post,
     }
 
 @register.simple_tag()

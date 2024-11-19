@@ -15,9 +15,15 @@ from .models import (
 )
 from .forms import (
     EmailPostForm,
-    CommentForm
+    CommentForm,
+    SearchForm
 )
 from django.db.models import Count
+from django.contrib.postgres.search import (
+    SearchVector,
+    SearchQuery,
+    SearchRank
+)
 
 # Create your views here.
 
@@ -29,6 +35,7 @@ from django.db.models import Count
 #     context_object_name = 'posts'
 #     paginate_by = 3
 #     template_name = 'blog/post/list.html'
+
 
 @require_POST
 def post_comment(request: HttpRequest, post_id):
@@ -156,3 +163,31 @@ def post_detail(request: HttpRequest, post: Post):
          }
     )
 
+def post_search(request: HttpRequest):
+    form = SearchForm()
+    query = None
+    results = []
+
+    if 'query' in request.GET:
+        form = SearchForm(request.GET)
+        print(form)
+        if form.is_valid():
+            query = form.cleaned_data['query']
+            search_vector = SearchVector('title', 'body')
+            search_query = SearchQuery(query)
+            results = (
+                Post.published.annotate(
+                    search=search_vector
+                ).filter(search=search_query) \
+                .order_by('-rank')
+            )
+
+    return render(
+        request,
+        'blog/post/search.html',
+        {
+            'form': form,
+            'query': query,
+            'results': results,
+        }
+    )
