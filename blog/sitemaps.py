@@ -21,9 +21,7 @@ class TagSitemap(Sitemap):
     priority = 0.9
 
     def items(self):
-        # Return all tags used in the blog
         return Tag.objects.all()
 
     def location(self, obj):
-        # Generate URL for the tag-filtered view
         return reverse('blog:post_list_by_tag', kwargs={'tag_slug': obj.slug})
